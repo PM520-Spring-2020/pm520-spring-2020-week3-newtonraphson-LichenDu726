@@ -1,0 +1,215 @@
+---
+title: "LichenDu_HW2b"
+author: "LichenDu"
+date: "2/17/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###2b Secant method
+
+####Secant function
+```{r}
+
+#StartingValue needs to be two numbers
+Secant=function(func,StartingValue,Tolerance,MaxNumberOfIterations){ 
+  i=0 #number of iterations
+  X1=StartingValue[1]
+  X2=StartingValue[2]
+  Y1=func(X1)[1]
+  Y2=func(X2)[1]
+  Deviation=1000
+  allx=c()
+  ally=c()
+  allslope=c()
+  allx[1]=X1
+  allx[2]=X2
+  ally[1]=Y1
+  ally[2]=Y2
+  allslope[1]=func(X1)[2]
+  allslope[2]=func(X2)[2]
+
+    while ((i<MaxNumberOfIterations)&&(Deviation>Tolerance))
+  {
+      
+      if ((Y2=="NaN")||(Y1=="NaN")){
+      cat("Function not defined error")
+      cat("\n",Y2,Y1)
+      break
+          }
+      
+    # Find the next (X1,X2)-value using Newton-Raphson's formula
+    if(Y1==Y2){
+    NewX=X2-Y2*(X2-X1)/(Y2-Y1+Tolerance)
+    NewY=func(NewX)[1]
+    Deviation=abs(NewY)}
+      else{
+        NewX=X2-Y2*(X2-X1)/(Y2-Y1)
+      NewY=func(NewX)[1]
+      Deviation=abs(NewY)
+      }
+
+    #update value of x1 and x2
+    X1=X2
+    Y1=func(X1)[1]
+    X2=NewX
+    Y2=func(X2)[1]
+    
+    # increase the value of your iteration counter
+    i=i+1
+    cat(paste("\nIteration ",i,":   X=",NewX,"  Y=",NewY))
+    allx[i+2]=NewX
+    ally[i+2]=NewY
+    allslope[i+2]=func(NewX)[2]
+  
+    }
+    
+  # output the result
+  if (Deviation<Tolerance){
+    cat(paste("\nFound the root point: ",NewX, " after ", i, "iterations"))
+  }else{
+    cat(paste("\nConvergence failure. Deviation: ",Deviation, "after ", i, 	"iterations"))}    
+  
+  # have the function return the answer
+  df=cbind(allx,ally,allslope)
+  return(df)
+}
+
+```
+
+
+####Secant Plot function
+```{r}
+Secant_plot=function(func){
+curve(func,lwd=5,xlim=c(min(df[,1]),max(df[,1])),ylim=c(min(df[,2]),max(df[,2]))) 
+abline(h=0)
+n=length(df[,1])
+for (i in 1:(n-2)){
+segments(df[i,1],0,df[i,1],df[i,2],lty=2,col="orange",lwd=2) #(x1,0) to (x1,y1)
+segments(df[i,1],df[i,2],df[i+1,1],df[i+1,2],lty=2,col="red",lwd=2) #(x1,y1) to (x2,y2)
+segments(df[i+1,1],df[i+1,2],df[i+2,1],0,lty=2,col="red",lwd=2) #(x2,y2) to (x3,0)
+}
+}
+```
+
+
+####Newton-Raphson function
+```{r}
+# Define your Newton-Raphson function  
+NewtonRaphson<-function(func,StartingValue,Tolerance,MaxNumberOfIterations){
+  i=0
+  X=StartingValue
+  Y=func(X)[1]
+  Deviation=abs(Y)
+  allx=c()
+  ally=c()
+  allslope=c()
+  allx[1]=X
+  ally[1]=Y
+  allslope[1]=func(X)[2]
+  while ((i<MaxNumberOfIterations)&&(Deviation>Tolerance))
+  { Z=c()
+    Z[1]=func(X)[1]
+    Z[2]=func(X)[2]
+    if ((Z[1]=="NaN")||(Z[2]=="NaN")){
+      cat("\nFunction or derivative not defined error.\n")
+      break
+    }
+   #update X and Y
+   X=X-Z[1]/Z[2]
+   Y=func(X)[1]
+   Deviation<-abs(Y)
+   i<-i+1
+   allx[i+1]=X
+   ally[i+1]=Y
+   allslope[i+1]=func(X)[2]
+   cat(paste("\nIteration ",i,":   X=",X,"  Y=",Y))
+  }
+  if (Deviation<Tolerance){
+    cat(paste("\nFound the root point: ",X, " after ", i, "iterations"))
+  }else{
+    cat(paste("\nConvergence failure. Deviation: ",Deviation, "after ", i, 	"iterations"))}   
+  df=cbind(allx,ally,allslope)
+  return(df)
+}
+
+```
+
+####Newton plot function
+```{r}
+Newton_plot=function(func){
+curve(func,xlim=c(min(df[,1]),max(df[,1])),ylim=c(min(df[,2]),max(df[,2])),lwd=5) 
+abline(h=0)
+n=length(df[,1])
+for (i in 1:(n-1)){
+segments(df[i,1],0,df[i,1],df[i,2],lty=2,col="orange",lwd=2) #(x1,0) to (x1,y1)
+segments(df[i,1],df[i,2],df[i+1,1],0,lty=2,col="red",lwd=2) #(x1,y1) to (x2,0)
+}
+}
+```
+
+
+#### 2 Functions
+```{r}
+#Functions
+F1=function(x){
+  return(c(cos(x)-x,-sin(x)-1))}
+F11=function(x){
+  return(cos(x)-x)}
+
+F2=function(x){  
+  return(c(log(x)-exp(-x),1/x+exp(-x)))}
+F22=function(x){  
+  return(log(x)-exp(-x))}
+
+```
+
+
+####Function1
+```{r}
+df=Secant(F1,c(1,2),0.0005,200)
+Secant_plot(F11)
+
+df=NewtonRaphson(F1,1,0.0005,200)
+Newton_plot(F11)
+
+df=NewtonRaphson(F1,2,0.0005,200)
+Newton_plot(F11)
+```
+
+
+
+###Function2
+```{r}
+df=Secant(F2,c(1,2),0.0005,200)
+Secant_plot(F22)
+
+df=NewtonRaphson(F2,1,0.0005,200)
+Newton_plot(F22)
+
+df=NewtonRaphson(F2,2,0.0005,200)
+Newton_plot(F22)
+```
+
+
+####Comparison: On those two functions, NewtonRaphson method has less iterations and performs better than Secant method. But when I try function1 in another startvalue, the situation changes.
+
+
+####Function1 start from (1,10)
+```{r}
+df=Secant(F1,c(1,10),0.0005,200)
+Secant_plot(F11)
+
+df=NewtonRaphson(F1,1,0.0005,200)
+Newton_plot(F11)
+
+df=NewtonRaphson(F1,10,0.0005,200)
+Newton_plot(F11)
+```
+
+
+
+####Conclusion: I cannot draw a conclustion regarding on the performance of these two root-finding methods cause their performance depends. Both starting values and function curve will affect the number of iterations.
